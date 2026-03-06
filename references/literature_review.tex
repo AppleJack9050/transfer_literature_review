@@ -1,0 +1,78 @@
+\chapter{Literature Review}\label{chap:survey}
+
+This chapter presents a systematic mapping of a project-curated corpus on accelerated 3D geospatial reconstruction, followed by an evidence synthesis structured around the project research questions. The emphasis throughout is on end-to-end pipeline design for parallel architectures while preserving GIS-grade, operationally usable outputs.
+
+\section{Systematic Literature Review and Mapping}
+
+\subsection{Scope and objectives}
+
+The review examines methods that accelerate 3D geospatial reconstruction from image collections while retaining \emph{map-ready} products, including georeferenced point clouds and digital elevation models (DEMs). The scope spans structure-from-motion (SfM), multi-view stereo (MVS), bundle adjustment (BA), satellite stereo/DEM pipelines, and distributed optimization for large-scale datasets. The objectives are threefold: (i) to identify stage-level computational bottlenecks, (ii) to characterize the computational units and orchestration mechanisms used to expose parallelism, and (iii) to extract stated or implied consequences for GIS-grade outputs (e.g., georeferencing stability, DEM validity, and merge consistency).
+
+\subsection{Corpus and eligibility criteria}
+
+The evidence base consists of the project’s local paper set maintained under the \texttt{assets/} directory. Studies were included when they satisfied both of the following criteria: (1) direct relevance to geospatial or large-scale 3D reconstruction (including UAV and satellite contexts), and (2) an explicit methodological contribution to runtime reduction, scalability, memory efficiency, or the robustness of reconstruction outputs. Studies were excluded when they addressed unrelated tasks, lacked transferable methodological insight for parallel workflow design, or provided insufficient technical detail to support consistent extraction.
+
+\subsection{Mapping results}
+
+Table~\ref{tab:sysmap-summary} summarizes representative studies per cluster and the dominant acceleration signal observed in the corpus.
+
+\begin{table}[ht]
+\centering
+\caption{Systematic mapping summary of representative studies and acceleration signals.}
+\small
+\begin{tabular}{p{0.22\textwidth}p{0.24\textwidth}p{0.2\textwidth}p{0.25\textwidth}}
+\hline
+\textbf{Cluster} & \textbf{Representative studies} & \textbf{Parallelization unit} & \textbf{Main signal} \\
+\hline
+Foundational SfM/MVS baselines & \cite{Schonberger2016,Schonberger2016MVS,Galliani2015} & Feature tracks, pixel-wise dense estimation & Establishes quality baselines; identifies dense reconstruction and BA as persistent bottlenecks \\
+GPU-first SfM and BA & \cite{Li2025FastMap,Zhong2025InstantSfM,Yu2025CuSfM,Safari2025,Gopinath2025} & Image pairs, sparse blocks, graph factors & Large speedups follow from reformulating optimization to match GPU sparsity and memory behavior \\
+Geospatial stereo and DEM pipelines & \cite{deFranchis2014,Amadei2025,Elias2025,Masquil2026} & Tiles, stereo pairs, temporal matching units & Dense stage dominates runtime; robustness degrades under multi-date and heterogeneous acquisitions \\
+Distributed and collaborative optimization & \cite{Zheng2023,Li2025BALM,Zhou2026} & Partitioned cameras, sub-models, distributed Schur systems & Required for very large scenes; merge consistency and global correctness become central risks \\
+\hline
+\end{tabular}
+\label{tab:sysmap-summary}
+\end{table}
+
+Across clusters, the strongest acceleration results are typically associated with explicit redefinition of computational units (pairs, tiles, blocks, partitions) and corresponding changes to optimization structure, rather than simple substitution of compute backends for legacy formulations.
+
+\section{Evidence Synthesis with Respect to the Research Questions}
+
+\subsection{Primary Research Question (PRQ)}
+
+\textbf{PRQ.} How can a 3D geospatial reconstruction \emph{pipeline} be systematically designed and implemented to effectively leverage \emph{parallelized computing architectures} in order to minimize \emph{end-to-end processing time}, while preserving \emph{operational autonomy} and producing outputs \emph{fit for purpose for downstream GIS analysis} across heterogeneous geographic environments?
+
+The corpus indicates that the PRQ is primarily a \emph{pipeline design} problem, rather than one that can be resolved by accelerating a single stage. Baseline systems establish that GIS-grade outcomes depend on stable camera estimation and dense surface generation, while also demonstrating that BA and dense stereo dominate computation in typical settings~\cite{Schonberger2016,Schonberger2016MVS,Galliani2015}. Recent work responds by partitioning computation into parallel-friendly units and reformulating optimization to align with GPU sparsity and memory constraints (e.g., pair-structured or factor-graph structured approaches)~\cite{Li2025FastMap,Zhong2025InstantSfM,Yu2025CuSfM,Gopinath2025}. At larger scales, distributed BA and hierarchical SfM suggest that global consistency can be maintained when camera/point systems are explicitly partitioned and subsequently merged using controlled consistency mechanisms~\cite{Zheng2023,Li2025BALM,Zhou2026}. In geospatial production pipelines, tile-based stereo and modular pushbroom formulations provide an established foundation for map-oriented outputs, while modern GPU acceleration reduces dense matching time but does not, by itself, resolve robustness under heterogeneous and multi-date imagery~\cite{deFranchis2014,Amadei2025,Masquil2026}.
+
+Collectively, the literature supports a PRQ-aligned design principle: \emph{parallelism, robustness, and autonomy should be co-designed at the decomposition and orchestration layers}, with explicit quality gates tied to GIS deliverables (e.g., georeferencing validity, DEM accuracy, and merge correctness) rather than relying solely on internal geometric proxy metrics~\cite{Elias2025}.
+
+\subsection{RQ1 --- Time Efficiency through Parallelization}
+
+\textbf{RQ1.} How can the workflow be algorithmically decomposed and computationally orchestrated to maximize exploitable parallelism, thereby reducing overall processing time while maintaining GIS-grade geometric fidelity and positional accuracy?
+
+Evidence relevant to RQ1 concentrates on \emph{decomposition} (what is parallelized) and \emph{orchestration} (how work is scheduled and synchronized). Baseline SfM/MVS systems consistently indicate that dense estimation and BA are recurrent bottlenecks in end-to-end pipelines~\cite{Schonberger2016,Schonberger2016MVS}. GPU-first systems achieve throughput by exposing parallel units that better match accelerator execution. For example, FastMap’s pair-linear formulation increases concurrency by operating on pair-structured components~\cite{Li2025FastMap}, while InstantSfM and CuSfM emphasize GPU-executable sparse operations across SfM and BA stages~\cite{Zhong2025InstantSfM,Yu2025CuSfM}. Within BA, matrix-free and mixed-precision designs reduce memory pressure and improve solver throughput, indicating that satisfying RQ1 requires BA-aware numerical and systems-level choices rather than only implementation-level parallelization~\cite{Safari2025,Gopinath2025}.
+
+For geospatial stereo and DEM production, the dominant RQ1 signal is that \emph{tile- and pair-level parallelism} is natural but insufficient unless dense matching is made both fast and predictable at scale. Pushbroom pipeline paradigms and tile-based processing provide a coherent unit of work for high-throughput DEM production~\cite{deFranchis2014}. s2p-hd further indicates that accelerating dense matching yields substantial reductions in production time, reinforcing dense-stage acceleration as a primary lever for end-to-end gains~\cite{Amadei2025}. For city- and region-scale datasets, distributed BA and hierarchical SfM show that parallelism must extend beyond a single node: partitioning and merging become first-class orchestration concerns, with distributed Schur-system computation serving as a central mechanism~\cite{Zheng2023,Li2025BALM,Zhou2026}.
+
+\subsection{RQ2 --- Robustness and Generalization}
+
+\textbf{RQ2.} How can the framework be structured to ensure robust, repeatable, and spatially consistent performance across diverse scenes, sensors, and conditions, without dependence on scene-specific parameterization or manual intervention?
+
+The evidence base for RQ2 is strongest where heterogeneity is explicitly evaluated or failure modes are directly discussed. Foundational baselines provide robust reference behavior for sparse reconstruction and dense estimation under conventional assumptions and curated datasets~\cite{Schonberger2016,Schonberger2016MVS}. However, geospatial pipelines emphasize that operational heterogeneity (e.g., multi-date acquisition, seasonal variation, land-cover change) can degrade matching robustness and thereby reduce downstream DEM validity. Diachronic matching directly challenges the same-date assumption, showing that robustness is not guaranteed under temporal heterogeneity~\cite{Masquil2026}. This implies that RQ2 requires pipeline mechanisms that (i) detect and manage appearance change, (ii) maintain spatial consistency under acquisition variability, and (iii) bound error propagation into GIS products.
+
+Distributed and hierarchical approaches introduce additional RQ2 constraints: robustness must hold both locally (within partitions) and globally (across merged partitions). Hierarchical global SfM highlights that sub-model merge quality can dominate final correctness, implying that scalable partitioning must be paired with principled alignment and consistency enforcement to avoid spatial discontinuities at GIS scale~\cite{Zhou2026}. Distributed BA similarly foregrounds the need to preserve global consistency under decomposition, identifying the merge and synchronization layer as a critical robustness surface~\cite{Zheng2023,Li2025BALM}. Overall, the corpus suggests that RQ2 is best addressed by workflow structures that introduce explicit robustness checks at stage boundaries (e.g., after registration, after dense matching, after merging) and evaluate stability using GIS-relevant criteria rather than only reprojection residuals~\cite{Elias2025}.
+
+\subsection{RQ3 --- Operational Autonomy}
+
+\textbf{RQ3.} How can the workflow be architected to minimize manual parameter specification, hyperparameter tuning, and operator oversight, while ensuring reliable, reproducible performance?
+
+Compared to RQ1 and RQ2, the corpus provides more indirect evidence for RQ3, but several implications recur. First, decomposition-aware designs reduce operational burden by making compute behavior more predictable: when stages are expressed in standardized work units (pairs, tiles, partitions), scheduling and resource allocation can be automated more readily, enabling unattended execution at scale~\cite{Li2025FastMap,Zhong2025InstantSfM,deFranchis2014}. Second, solver and numerical choices influence autonomy through stability: approaches that reduce memory pressure and improve convergence behavior (e.g., matrix-free BA, mixed precision with appropriate safeguards) can reduce the need for operator intervention during large runs~\cite{Safari2025,Gopinath2025}. Third, distributed and hierarchical pipelines shift autonomy requirements toward the integration layer: partition definition, merge ordering, and failure recovery policies become operational controls that should be systematized to avoid manual triage on large datasets~\cite{Zheng2023,Li2025BALM,Zhou2026}.
+
+In geospatial DEM pipelines, modularity and tile processing support automation but also expose autonomy risks when robustness degrades under heterogeneous or multi-date imagery; such cases can trigger manual remediation unless the pipeline includes automatic diagnostics and fallback strategies~\cite{Amadei2025,Masquil2026}. Consequently, RQ3 motivates explicit design for (i) self-diagnosis via measurable quality gates tied to geospatial outputs, (ii) parameter defaults that remain stable across environments, and (iii) deterministic orchestration policies that improve reproducibility under parallel execution~\cite{Elias2025}.
+
+\section{Implications and Gap Alignment}
+
+Synthesizing across RQ1--RQ3 yields three cross-cutting implications that inform the project direction. First, many acceleration results remain stage-local; comparatively fewer studies report end-to-end evaluations that link speedups to GIS-grade deliverables under consistent benchmarks~\cite{Elias2025}. Second, robustness under heterogeneous and multi-date imagery remains a central limitation for operational geospatial use, particularly in dense stereo where throughput and reliability jointly determine GIS utility~\cite{Masquil2026}. Third, integration between GPU-first local acceleration and distributed global consistency remains incomplete: unified designs that jointly optimize sparse, dense, and merge stages for both performance and GIS-grade correctness are still relatively sparse in the corpus~\cite{Li2025FastMap,Zhong2025InstantSfM,Zheng2023}.
+
+\section{Summary}
+
+This chapter mapped the local corpus into four thematic clusters spanning foundational baselines, GPU-first acceleration, geospatial stereo/DEM production, and distributed optimization. The evidence synthesis, structured by the PRQ and RQ1--RQ3, indicates that minimizing end-to-end runtime while preserving GIS-grade outputs requires decomposition-aware parallel orchestration (RQ1), explicit robustness mechanisms under heterogeneous conditions and across merges (RQ2), and autonomy-oriented workflow controls such as quality gates and stable solver behavior to reduce operator oversight (RQ3). These findings motivate an end-to-end research strategy that jointly optimizes computational structure, distributed consistency, and output validity for geospatial operations.

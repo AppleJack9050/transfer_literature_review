@@ -1,23 +1,26 @@
 ---
 name: transfer_literature_review
-description: This skill automatically generates a structured LaTeX (`.tex`) literature review for 3D reconstruction research and synthesizes peer-reviewed sources to summarize core methodologies.
+description: Generate a structured LaTeX (.tex) literature review for 3D geospatial reconstruction by synthesizing peer-reviewed research and summarizing core methodologies.
 ---
 
-# Geospatial Reconstruction Literature
+# Geospatial Reconstruction Literature Review
 
 ## Content
-This part you could refer [literature_review.tex] in the references. The format or framework you could refer [yuanliang.tex] in the references.
+Use the following materials located in the **[references]** folder:
 
-## requirements
-- Relevance over volume; focus on topics that are directly connected to your research. Prioritise depth over breadth.
-- Clearly show what has already been done, highlight gaps, and explain how these gaps informed your research direction.
-- Firstly do systematic review, then do review on research question.
-- You could refer research question from [research_question.md] in the references.
+- [literature_review.tex] – example literature review structure  
+- [deep-research-report.md] – background research notes  
+- [yuanliang.tex] – LaTeX structure and formatting template  
+- [research_outline.md] – research questions
 
+All referenced files must appear in **[ ]** format.
 
----
+## Requirements
+- Prioritise **relevance and depth** over volume.
+- Clearly summarise existing work and **identify research gaps**.
+- First conduct a **systematic literature review**, then discuss literature related to the **research questions from [research_outline.md]**.
 
 ## Output
-Output must be latex version and written into hard drive.
-
----
+- Generate the literature review in **LaTeX (.tex)** format.
+- Follow the structure of **[yuanliang.tex]**.
+- Save the generated file to the **hard drive**.
