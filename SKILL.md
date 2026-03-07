@@ -1,5 +1,5 @@
 ---
-name: transfer_literature_review
+name: sta_literature_review
 description: Generate a structured LaTeX (.tex) literature review for 3D geospatial reconstruction by synthesizing peer-reviewed research and summarizing core methodologies.
 ---
 
