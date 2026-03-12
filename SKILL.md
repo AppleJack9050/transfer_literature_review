@@ -1,6 +1,6 @@
 ---
 name: sta_literature_review
-description: Generate a structured LaTeX (.tex) literature review for 3D geospatial reconstruction by synthesizing peer-reviewed research and summarizing core methodologies.
+description: Generate a structured LaTeX (.tex) literature review for 3D geospatial reconstruction.
 ---
 
 # Geospatial Reconstruction Literature Review
@@ -8,19 +8,20 @@ description: Generate a structured LaTeX (.tex) literature review for 3D geospat
 ## Content
 Use the following materials located in the **[references]** folder:
 
-- [literature_review.tex] – example literature review structure  
+- [literature_review_generated.tex] - literature review structure for your reference
 - [deep-research-report.md] – background research notes  
-- [yuanliang.tex] – LaTeX structure and formatting template  
-- [research_outline.md] – research questions
-
-All referenced files must appear in **[ ]** format.
+- [outline.md] – LaTeX structure and formatting template  
+- [research_context.md] – research context and objectives
 
 ## Requirements
 - Prioritise **relevance and depth** over volume.
 - Clearly summarise existing work and **identify research gaps**.
-- First conduct a **systematic literature review**, then discuss literature related to the **research questions from [research_outline.md]**.
+- Discuss literature related to the **research questions from [research_context.md]**.
+
+## Assets
+- all the content in the assets folder you could refer.
 
 ## Output
 - Generate the literature review in **LaTeX (.tex)** format.
-- Follow the structure of **[yuanliang.tex]**.
+- Follow the structure of **[outline.md]**.
 - Save the generated file to the **hard drive**.
